@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    # Admin técnico (opcional) – não é o painel do casal
+    # Admin tecnico (opcional) - nao e o painel administrativo
     path("django-admin/", admin.site.urls),
     path("", include("core.urls")),
 ]

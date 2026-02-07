@@ -70,10 +70,10 @@
             </a>
           </li>
           {% endif %}
-          {% if user.is_staff or user.is_superuser or user.profile.is_couple_admin %}
+          {% if user.is_staff or user.is_superuser or user.profile.is_event_admin %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'painel_dashboard' %}">
-              <i class="fa-solid fa-gear me-1"></i>Painel do casal
+              <i class="fa-solid fa-gear me-1"></i>Painel admin
             </a>
           </li>
           {% endif %}

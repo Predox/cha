@@ -24,6 +24,6 @@ class ReservationAdmin(admin.ModelAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "phone_number", "is_couple_admin", "is_observer", "is_couple", "partner_name", "created_at")
-    list_filter = ("is_couple_admin", "is_observer", "is_couple")
-    search_fields = ("phone_number", "user__username", "user__email", "user__first_name", "partner_name")
+    list_display = ("user", "phone_number", "is_event_admin", "is_observer", "created_at")
+    list_filter = ("is_event_admin", "is_observer")
+    search_fields = ("phone_number", "user__username", "user__email", "user__first_name")

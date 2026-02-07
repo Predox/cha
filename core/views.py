@@ -9,7 +9,7 @@ from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .decorators import couple_admin_required, observer_required
+from .decorators import event_admin_required, observer_required
 from .forms import (
     LoginForm,
     RegistrationForm,
@@ -46,12 +46,12 @@ def setup(request, token: str):
     """Setup inicial protegido por token em variavel de ambiente.
 
     URL: /setup/<SETUP_TOKEN>/
-    Funciona apenas se ainda nao existir um casal administrador.
+    Funciona apenas se ainda nao existir um administrador.
     """
     if not settings.SETUP_TOKEN or token != settings.SETUP_TOKEN:
         raise Http404()
 
-    if Profile.objects.filter(is_couple_admin=True).exists():
+    if Profile.objects.filter(is_event_admin=True).exists():
         messages.info(request, "O setup inicial ja foi concluido.")
         return redirect("login")
 
@@ -69,31 +69,31 @@ def setup(request, token: str):
                 setattr(site, field, value)
         site.save()
 
-        phone_raw = form.cleaned_data["couple_phone"]
+        phone_raw = form.cleaned_data["admin_phone"]
         phone_norm = normalize_phone(phone_raw)
-        email = (form.cleaned_data.get("couple_email") or "").strip().lower()
+        email = (form.cleaned_data.get("admin_email") or "").strip().lower()
 
         username = phone_norm or phone_raw.strip()
-        # Cria usuario do casal
+        # Cria usuario administrador
         if User.objects.filter(username=username).exists():
             messages.error(
                 request,
-                "Ja existe um usuario com este telefone. Faca login e peca para marcar como casal no banco.",
+                "Ja existe um usuario com este telefone. Faca login e peca para marcar como admin no banco.",
             )
             return redirect("login")
 
         user = User.objects.create(username=username, email=email)
-        p1 = (form.cleaned_data.get("couple_password1") or "").strip()
+        p1 = (form.cleaned_data.get("admin_password1") or "").strip()
         if p1:
             user.set_password(p1)
         else:
             user.set_unusable_password()
         user.save()
 
-        # Marca perfil como casal
+        # Marca perfil como admin
         profile = user.profile
         profile.phone_number = phone_norm or phone_raw.strip()
-        profile.is_couple_admin = True
+        profile.is_event_admin = True
         profile.save()
 
         messages.success(request, "Setup concluido. Agora faca login.")
@@ -127,8 +127,6 @@ def cadastro(request):
         email = (form.cleaned_data.get("email") or "").strip().lower()
         phone = form.cleaned_data.get("phone_number") or ""
         password = form.cleaned_data.get("password1") or ""
-        is_couple = bool(form.cleaned_data.get("is_couple"))
-        partner_name = (form.cleaned_data.get("partner_name") or "").strip()
 
         existing_user = getattr(form, "existing_user", None)
         if existing_user:
@@ -156,9 +154,7 @@ def cadastro(request):
         if not profile:
             profile = Profile.objects.create(user=user)
         profile.phone_number = phone
-        profile.is_couple = is_couple
-        profile.partner_name = partner_name
-        profile.save(update_fields=["phone_number", "is_couple", "partner_name"])
+        profile.save(update_fields=["phone_number"])
 
         login(request, user)
         request.session["show_welcome_modal"] = True
@@ -256,10 +252,10 @@ def cancelar_reserva(request, gift_id: int):
 
 
 # ======================
-# Painel do casal (anonimo)
+# Painel administrativo
 # ======================
 
-@couple_admin_required
+@event_admin_required
 def painel_dashboard(request):
     total = Gift.objects.filter(is_active=True).count()
     reserved = Reservation.objects.count()
@@ -295,7 +291,7 @@ def painel_dashboard(request):
     )
 
 
-@couple_admin_required
+@event_admin_required
 def painel_presentes(request):
     gifts = Gift.objects.all().order_by("-created_at").annotate(
         reserved=Exists(Reservation.objects.filter(gift=OuterRef("pk")))
@@ -310,7 +306,7 @@ def painel_presentes(request):
     )
 
 
-@couple_admin_required
+@event_admin_required
 def painel_presente_novo(request):
     form = GiftForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
@@ -320,7 +316,7 @@ def painel_presente_novo(request):
     return render(request, "painel/presente_form.html", {"form": form, "mode": "new"})
 
 
-@couple_admin_required
+@event_admin_required
 def painel_presente_editar(request, gift_id: int):
     gift = get_object_or_404(Gift, id=gift_id)
     if Reservation.objects.filter(gift=gift).exists():
@@ -335,7 +331,7 @@ def painel_presente_editar(request, gift_id: int):
     return render(request, "painel/presente_form.html", {"form": form, "mode": "edit", "gift": gift})
 
 
-@couple_admin_required
+@event_admin_required
 def painel_presente_excluir(request, gift_id: int):
     gift = get_object_or_404(Gift, id=gift_id)
     if Reservation.objects.filter(gift=gift).exists():
@@ -350,7 +346,7 @@ def painel_presente_excluir(request, gift_id: int):
     return render(request, "painel/presente_confirm_delete.html", {"gift": gift})
 
 
-@couple_admin_required
+@event_admin_required
 def painel_personalizacao(request):
     site = SiteSettings.get_solo()
     form = SiteSettingsForm(request.POST or None, instance=site)
@@ -361,7 +357,7 @@ def painel_personalizacao(request):
     return render(request, "painel/personalizacao.html", {"form": form})
 
 
-@couple_admin_required
+@event_admin_required
 def painel_mensagens(request):
     # Mensagens anonimas (nao exibimos usuario)
     base_qs = (
@@ -384,7 +380,7 @@ def painel_mensagens(request):
     )
 
 
-@couple_admin_required
+@event_admin_required
 def marcar_mensagem_vista(request, reservation_id: int):
     if request.method != "POST":
         return HttpResponseForbidden("Metodo nao permitido.")
@@ -392,7 +388,7 @@ def marcar_mensagem_vista(request, reservation_id: int):
     return redirect(request.META.get("HTTP_REFERER", "painel_mensagens"))
 
 
-@couple_admin_required
+@event_admin_required
 def marcar_todas_mensagens_vistas(request):
     if request.method != "POST":
         return HttpResponseForbidden("Metodo nao permitido.")

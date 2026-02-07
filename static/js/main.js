@@ -176,25 +176,6 @@
 })();
 
 (function () {
-  var toggle = document.querySelector("[data-couple-toggle]");
-  var fields = document.querySelector("[data-couple-fields]");
-  if (!toggle || !fields) {
-    return;
-  }
-
-  function updateVisibility() {
-    if (toggle.checked) {
-      fields.classList.remove("d-none");
-    } else {
-      fields.classList.add("d-none");
-    }
-  }
-
-  toggle.addEventListener("change", updateVisibility);
-  updateVisibility();
-})();
-
-(function () {
   var modalEl = document.getElementById("confirmModal");
   var messageEl = document.getElementById("confirmModalMessage");
   var confirmBtn = document.getElementById("confirmModalConfirm");

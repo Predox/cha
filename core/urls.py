@@ -20,7 +20,7 @@ urlpatterns = [
     path("presentes/<int:gift_id>/reservar/", views.reservar_presente, name="reservar_presente"),
     path("presentes/<int:gift_id>/cancelar/", views.cancelar_reserva, name="cancelar_reserva"),
 
-    # Painel do casal
+    # Painel admin
     path("painel/", views.painel_dashboard, name="painel_dashboard"),
     path("painel/presentes/", views.painel_presentes, name="painel_presentes"),
     path("painel/presentes/novo/", views.painel_presente_novo, name="painel_presente_novo"),

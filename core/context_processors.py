@@ -20,7 +20,7 @@ def site_context(request):
         my_reserved_count = Reservation.objects.filter(user=request.user).count()
 
         profile = getattr(request.user, "profile", None)
-        is_admin = request.user.is_staff or request.user.is_superuser or (profile and profile.is_couple_admin)
+        is_admin = request.user.is_staff or request.user.is_superuser or (profile and profile.is_event_admin)
         if is_admin:
             base_qs = (
                 Reservation.objects.exclude(anonymous_message="")

@@ -5,10 +5,8 @@ from django.db import models
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     phone_number = models.CharField(max_length=20, unique=True, null=True, blank=True)
-    is_couple_admin = models.BooleanField(default=False)
+    is_event_admin = models.BooleanField(default=False)
     is_observer = models.BooleanField(default=False)
-    is_couple = models.BooleanField(default=False)
-    partner_name = models.CharField(max_length=150, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -18,8 +16,6 @@ class Profile(models.Model):
     @property
     def display_name(self) -> str:
         base = self.user.get_full_name() or self.user.username or "Convidado"
-        if self.is_couple and self.partner_name:
-            return f"{base} & {self.partner_name}"
         return base
 
 
@@ -117,7 +113,4 @@ class Reservation(models.Model):
     @property
     def reserver_name(self) -> str:
         base = self.user.get_full_name() or self.user.username or "Convidado"
-        profile = getattr(self.user, "profile", None)
-        if profile and profile.is_couple and profile.partner_name:
-            return f"{base} & {profile.partner_name}"
         return base
