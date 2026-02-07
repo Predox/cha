@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="cp-page-head mb-3">
+  <div>
+    {% if mode == "new" %}
+      <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-plus me-2"></i>Novo presente</h1>
+    {% else %}
+      <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-pen-to-square me-2"></i>Editar presente</h1>
+    {% endif %}
+    <div class="cp-subtitle small">Imagem, título e descrição aparecem para os convidados no catálogo.</div>
+  </div>
+  <div class="cp-page-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'painel_presentes' %}">
+      <i class="fa-solid fa-arrow-left me-2"></i>Voltar
+    </a>
+  </div>
+</section>
+
+<div class="card cp-card shadow-sm">
+  <div class="card-body p-4">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Título</label>
+        {{ form.title }}
+        {% if form.title.errors %}
+          <div class="text-danger small">{{ form.title.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Descrição</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+          <div class="text-danger small">{{ form.description.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Imagem principal</label>
+        {{ form.image }}
+        <div class="form-text">Formatos comuns: JPG/PNG. Em produção, recomenda-se configurar volume para /media.</div>
+        {% if form.image.errors %}
+          <div class="text-danger small">{{ form.image.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Imagem extra 1 (opcional)</label>
+          {{ form.image_2 }}
+          {% if form.image_2.errors %}
+            <div class="text-danger small">{{ form.image_2.errors }}</div>
+          {% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Imagem extra 2 (opcional)</label>
+          {{ form.image_3 }}
+          {% if form.image_3.errors %}
+            <div class="text-danger small">{{ form.image_3.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Links para comprar (opcional)</label>
+        {{ form.purchase_links }}
+        <div class="form-text">Um por linha. Formato: "Nome | URL" ou apenas a URL.</div>
+        {% if form.purchase_links.errors %}
+          <div class="text-danger small">{{ form.purchase_links.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-check mb-4">
+        {{ form.is_active }}
+        <label class="form-check-label">Ativo no catálogo</label>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <button class="btn btn-primary" type="submit">
+        <i class="fa-solid fa-floppy-disk me-2"></i>Salvar
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

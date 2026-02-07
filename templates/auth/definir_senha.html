@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card cp-card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3"><i class="fa-solid fa-key me-2"></i>Definir/alterar senha</h1>
+
+        <p class="text-muted mb-4">
+          Essa senha é opcional. Você sempre pode entrar usando código (SMS/e-mail).
+        </p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            {{ form.new_password1.label_tag }}
+            {{ form.new_password1 }}
+            {% if form.new_password1.errors %}
+              <div class="text-danger small">{{ form.new_password1.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            {{ form.new_password2.label_tag }}
+            {{ form.new_password2 }}
+            {% if form.new_password2.errors %}
+              <div class="text-danger small">{{ form.new_password2.errors }}</div>
+            {% endif %}
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <button class="btn btn-primary w-100" type="submit">
+            <i class="fa-solid fa-floppy-disk me-2"></i>Salvar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

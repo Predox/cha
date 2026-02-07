@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="cp-hero mb-4">
+  <div class="cp-hero-content">
+    <div class="cp-hero-tag">
+      <i class="fa-solid fa-heart me-2"></i>Chá de panela divertido
+    </div>
+    <h1 class="cp-title mb-2"><i class="fa-solid fa-list me-2"></i>Catálogo de presentes</h1>
+    <p class="cp-subtitle mb-3">
+      Escolha um presente com carinho. As reservas evitam que duas pessoas escolham o mesmo item.
+    </p>
+    <div class="cp-statline">
+      <div class="cp-stat">
+        <span>Total</span>
+        <strong>{{ global_stats.total_gifts }}</strong>
+      </div>
+      <div class="cp-stat">
+        <span>Reservados</span>
+        <strong>{{ global_stats.reserved_gifts }}</strong>
+      </div>
+      <div class="cp-stat">
+        <span>Disponíveis</span>
+        <strong>{{ global_stats.available_gifts }}</strong>
+      </div>
+    </div>
+  </div>
+  <div class="cp-hero-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'meus_presentes' %}">
+      <i class="fa-solid fa-bookmark me-2"></i>Ver meus presentes
+    </a>
+  </div>
+</section>
+
+{% if my_reserved_count > 1 %}
+  <div class="alert alert-warning">
+    <div class="fw-semibold mb-1"><i class="fa-solid fa-triangle-exclamation me-2"></i>Atenção: você reservou mais de um presente</div>
+    <div class="small">
+      Reservar mais de um presente pode impedir que outra pessoa consiga escolher o presente que quer dar.
+      Se você reservou mais de um sem querer, cancele as reservas extras em <a href="{% url 'meus_presentes' %}">Meus presentes</a>.
+    </div>
+  </div>
+{% elif my_reserved_count == 1 %}
+  <div class="alert alert-info">
+    <div class="small">
+      Você já reservou 1 presente. Se quiser trocar, cancele e reserve outro.
+    </div>
+  </div>
+{% endif %}
+
+<div class="row g-3 cp-card-grid">
+  {% for gift in gifts %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card cp-card h-100 shadow-sm cp-card-clickable" data-modal-id="giftModal{{ gift.id }}">
+        <div class="cp-card-media">
+          {% if gift.image %}
+            <img src="{{ gift.image.url }}" class="card-img-top cp-gift-img" alt="Imagem do presente">
+          {% else %}
+            <div class="cp-gift-placeholder d-flex align-items-center justify-content-center">
+              <i class="fa-solid fa-image fa-2x text-muted"></i>
+            </div>
+          {% endif %}
+
+          {% if gift.reserved_by_me %}
+            <span class="cp-card-status badge text-bg-success">
+              <i class="fa-solid fa-check me-1"></i>Reservado por você
+            </span>
+          {% elif gift.reserved %}
+            <span class="cp-card-status badge text-bg-secondary">
+              <i class="fa-solid fa-lock me-1"></i>Indisponível
+            </span>
+          {% endif %}
+        </div>
+
+        <div class="card-body cp-card-body d-flex flex-column">
+          <h2 class="cp-card-title mb-2">{{ gift.title }}</h2>
+          {% if gift.description %}
+            <p class="cp-card-desc text-muted small mb-3">{{ gift.description|linebreaksbr }}</p>
+          {% else %}
+            <p class="cp-card-desc text-muted small mb-3">Sem descrição.</p>
+          {% endif %}
+
+          <div class="mt-auto cp-card-actions">
+            {% if gift.reserved_by_me %}
+              <form class="cp-stop" method="post" action="{% url 'cancelar_reserva' gift.id %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger w-100" type="submit">
+                  <i class="fa-solid fa-xmark me-1"></i>Cancelar reserva
+                </button>
+              </form>
+
+            {% elif gift.reserved %}
+              <button class="btn btn-sm btn-outline-secondary w-100 cp-stop" disabled>
+                <i class="fa-solid fa-lock me-1"></i>Indisponível
+              </button>
+
+            {% else %}
+              <button class="btn btn-primary w-100 cp-stop" data-bs-toggle="modal" data-bs-target="#reserveModal{{ gift.id }}">
+                <i class="fa-solid fa-bookmark me-2"></i>Reservar
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de detalhes -->
+    <div class="modal fade" id="giftModal{{ gift.id }}" tabindex="-1" aria-labelledby="giftModalLabel{{ gift.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content cp-card cp-gift-modal">
+          <div class="modal-header border-0">
+            <h3 class="modal-title h5" id="giftModalLabel{{ gift.id }}">{{ gift.title }}</h3>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-4">
+              <div class="col-lg-6">
+                {% with imgs=gift.images_list %}
+                  {% if imgs %}
+                    <div id="giftCarousel{{ gift.id }}" class="carousel slide cp-carousel" data-bs-ride="carousel">
+                      {% if imgs|length > 1 %}
+                        <div class="carousel-indicators">
+                          {% for img in imgs %}
+                            <button type="button"
+                                    data-bs-target="#giftCarousel{{ gift.id }}"
+                                    data-bs-slide-to="{{ forloop.counter0 }}"
+                                    class="{% if forloop.first %}active{% endif %}"
+                                    {% if forloop.first %}aria-current="true"{% endif %}
+                                    aria-label="Slide {{ forloop.counter }}">
+                            </button>
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+
+                      <div class="carousel-inner">
+                        {% for img in imgs %}
+                          <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ img.url }}" class="d-block w-100 cp-gift-modal-img" alt="{{ img.alt }}">
+                          </div>
+                        {% endfor %}
+                      </div>
+
+                      {% if imgs|length > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#giftCarousel{{ gift.id }}" data-bs-slide="prev">
+                          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                          <span class="visually-hidden">Anterior</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#giftCarousel{{ gift.id }}" data-bs-slide="next">
+                          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                          <span class="visually-hidden">Próximo</span>
+                        </button>
+                      {% endif %}
+                    </div>
+                  {% else %}
+                    <div class="cp-gift-placeholder d-flex align-items-center justify-content-center cp-gift-modal-img">
+                      <i class="fa-solid fa-image fa-2x text-muted"></i>
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              </div>
+              <div class="col-lg-6">
+                <div class="mb-3">
+                  {% if gift.description %}
+                    <p class="mb-0">{{ gift.description|linebreaksbr }}</p>
+                  {% else %}
+                    <p class="text-muted mb-0">Sem descrição.</p>
+                  {% endif %}
+                </div>
+
+                {% if gift.purchase_links_list %}
+                  <div class="cp-link-section">
+                    <div class="fw-semibold mb-2"><i class="fa-solid fa-cart-shopping me-2"></i>Ideias de compra</div>
+                    <div class="cp-link-list">
+                      {% for link in gift.purchase_links_list %}
+                        <a class="btn btn-outline-secondary btn-sm cp-link-btn" href="{{ link.url }}" target="_blank" rel="noopener">
+                          {{ link.label }}
+                        </a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0">
+            {% if not gift.reserved and not gift.reserved_by_me %}
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reserveModal{{ gift.id }}" data-bs-dismiss="modal">
+                <i class="fa-solid fa-bookmark me-2"></i>Reservar
+              </button>
+            {% endif %}
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if not gift.reserved and not gift.reserved_by_me %}
+    <!-- Modal de reserva -->
+    <div class="modal fade" id="reserveModal{{ gift.id }}" tabindex="-1" aria-labelledby="reserveModalLabel{{ gift.id }}" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title h6" id="reserveModalLabel{{ gift.id }}"><i class="fa-solid fa-bookmark me-2"></i>Reservar presente</h3>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <form method="post" action="{% url 'reservar_presente' gift.id %}">
+            {% csrf_token %}
+            <div class="modal-body">
+              <div class="fw-semibold mb-1">{{ gift.title }}</div>
+              <div class="small text-muted mb-3">
+                Ao confirmar, este presente ficará indisponível para outras pessoas.
+              </div>
+
+              <label class="form-label fw-semibold">Mensagem anônima para os homenageados (opcional)</label>
+              <textarea name="anonymous_message" class="form-control" rows="4" maxlength="1000"
+                placeholder="Escreva uma mensagem de carinho sem colocar seu nome. A mensagem deve ser anônima."></textarea>
+              <div class="form-text">
+                A mensagem será exibida ao casal sem identificação.
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                <i class="fa-solid fa-ban me-1"></i>Voltar
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-check me-1"></i>Confirmar reserva
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  {% empty %}
+    <div class="col-12">
+      <div class="alert alert-secondary">
+        Ainda não há presentes cadastrados no catálogo.
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

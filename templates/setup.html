@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card cp-card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>Setup inicial</h1>
+
+        <p class="text-muted">
+          Esta tela serve para configurar o site pela primeira vez (criar o acesso do casal e definir data do evento).
+          Após concluir, este setup não aparecerá mais.
+        </p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-3">
+            <div class="col-md-8">
+              {{ form.site_title.label_tag }}{{ form.site_title }}
+            </div>
+            <div class="col-md-4">
+              {{ form.event_date.label_tag }}{{ form.event_date }}
+            </div>
+
+            <div class="col-md-6">
+              {{ form.couple_phone.label_tag }}{{ form.couple_phone }}
+              <div class="form-text">Use um telefone válido; recomendamos incluir DDD.</div>
+            </div>
+            <div class="col-md-6">
+              {{ form.couple_email.label_tag }}{{ form.couple_email }}
+            </div>
+
+            <div class="col-md-6">
+              {{ form.couple_password1.label_tag }}{{ form.couple_password1 }}
+              <div class="form-text">Opcional. O casal também pode entrar por código (SMS/e-mail).</div>
+            </div>
+            <div class="col-md-6">
+              {{ form.couple_password2.label_tag }}{{ form.couple_password2 }}
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger mt-3">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <button class="btn btn-primary mt-4" type="submit">
+            <i class="fa-solid fa-check me-2"></i>Concluir setup
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

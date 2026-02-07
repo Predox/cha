@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card cp-card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3"><i class="fa-solid fa-lock-open me-2"></i>Redefinir senha</h1>
+
+        <p class="text-muted mb-4">
+          Digite o código recebido e escolha uma nova senha.
+        </p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="mb-3">
+            {{ form.code.label_tag }}
+            {{ form.code }}
+            {% if form.code.errors %}
+              <div class="text-danger small">{{ form.code.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.new_password1.label_tag }}
+            {{ form.new_password1 }}
+          </div>
+          <div class="mb-3">
+            {{ form.new_password2.label_tag }}
+            {{ form.new_password2 }}
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <button class="btn btn-primary w-100" type="submit">
+            <i class="fa-solid fa-floppy-disk me-2"></i>Salvar nova senha
+          </button>
+        </form>
+
+        <div class="mt-3">
+          <a class="link-secondary" href="{% url 'esqueci_senha' %}">
+            <i class="fa-solid fa-rotate-left me-1"></i>Solicitar novo código
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="cp-page-head mb-3">
+  <div>
+    <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-gift me-2"></i>Gerenciar presentes</h1>
+    <div class="cp-subtitle small">
+      Você pode editar/excluir apenas presentes que ainda não foram reservados.
+    </div>
+  </div>
+  <div class="cp-page-actions d-flex gap-2">
+    <a class="btn btn-primary" href="{% url 'painel_presente_novo' %}">
+      <i class="fa-solid fa-plus me-2"></i>Novo presente
+    </a>
+    <a class="btn btn-outline-secondary" href="{% url 'painel_dashboard' %}">
+      <i class="fa-solid fa-arrow-left me-2"></i>Voltar
+    </a>
+  </div>
+</section>
+
+<div class="card cp-card shadow-sm">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Presente</th>
+            <th class="text-center" style="width: 140px;">Status</th>
+            <th class="text-end" style="width: 220px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for g in gifts %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ g.title }}</div>
+                <div class="text-muted small">Criado em {{ g.created_at|date:"d/m/Y" }}</div>
+              </td>
+
+              <td class="text-center">
+                {% if g.reserved %}
+                  <span class="badge text-bg-success"><i class="fa-solid fa-check me-1"></i>Reservado</span>
+                {% else %}
+                  <span class="badge text-bg-secondary"><i class="fa-solid fa-unlock me-1"></i>Livre</span>
+                {% endif %}
+              </td>
+
+              <td class="text-end">
+                {% if g.reserved %}
+                  <button class="btn btn-sm btn-outline-secondary" disabled>
+                    <i class="fa-solid fa-pen-to-square me-1"></i>Editar
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary" disabled>
+                    <i class="fa-solid fa-trash me-1"></i>Excluir
+                  </button>
+                {% else %}
+                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'painel_presente_editar' g.id %}">
+                    <i class="fa-solid fa-pen-to-square me-1"></i>Editar
+                  </a>
+                  <a class="btn btn-sm btn-outline-danger" href="{% url 'painel_presente_excluir' g.id %}">
+                    <i class="fa-solid fa-trash me-1"></i>Excluir
+                  </a>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="text-muted">Nenhum presente cadastrado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

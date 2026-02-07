@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="cp-page-head mb-3">
+  <div>
+    <h1 class="cp-title-sm mb-1"><i class="fa-regular fa-message me-2"></i>Mensagens anônimas</h1>
+    <div class="cp-subtitle small">
+      Estas mensagens foram deixadas pelos convidados no momento da reserva. Não há identificação.
+    </div>
+  </div>
+  <div class="cp-page-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'painel_dashboard' %}">
+      <i class="fa-solid fa-arrow-left me-2"></i>Voltar
+    </a>
+  </div>
+</section>
+
+{% if reservations %}
+  <div class="row g-3 cp-card-grid">
+    {% for r in reservations %}
+      <div class="col-lg-6">
+        <div class="card cp-card shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="fw-semibold">{{ r.gift.title }}</div>
+              <div class="text-muted small">{{ r.created_at|date:"d/m/Y H:i" }}</div>
+            </div>
+            <div class="border rounded p-3 bg-light">
+              <div class="small text-muted">{{ r.anonymous_message|linebreaksbr }}</div>
+            </div>
+            <div class="small text-muted mt-2">
+              <i class="fa-solid fa-user-secret me-1"></i>Mensagem anônima
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-secondary">
+    Ainda não há mensagens.
+  </div>
+{% endif %}
+
+{% endblock %}

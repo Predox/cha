@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="cp-page-head mb-3">
+  <div>
+    <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-palette me-2"></i>Personalização</h1>
+    <div class="cp-subtitle small">
+      As cores salvas aqui são aplicadas em todo o site (para o casal e para os convidados).
+    </div>
+  </div>
+  <div class="cp-page-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'painel_dashboard' %}">
+      <i class="fa-solid fa-arrow-left me-2"></i>Voltar
+    </a>
+  </div>
+</section>
+
+<div class="card cp-card shadow-sm">
+  <div class="card-body p-4">
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="row g-3">
+        <div class="col-md-8">
+          {{ form.site_title.label_tag }}{{ form.site_title }}
+        </div>
+        <div class="col-md-4">
+          {{ form.event_date.label_tag }}{{ form.event_date }}
+        </div>
+
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger mt-3">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <button class="btn btn-primary mt-4" type="submit">
+        <i class="fa-solid fa-floppy-disk me-2"></i>Salvar personalização
+      </button>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

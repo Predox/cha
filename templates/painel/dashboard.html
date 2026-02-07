@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="cp-page-head mb-3">
+  <div>
+    <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-gear me-2"></i>Painel do casal</h1>
+    <div class="cp-subtitle small">
+      As reservas são anônimas: este painel não mostra quem reservou cada presente.
+    </div>
+  </div>
+  <div class="cp-page-actions d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'painel_presentes' %}">
+      <i class="fa-solid fa-gift me-2"></i>Gerenciar presentes
+    </a>
+    <a class="btn btn-outline-secondary" href="{% url 'painel_personalizacao' %}">
+      <i class="fa-solid fa-palette me-2"></i>Personalização
+    </a>
+  </div>
+</section>
+
+<div class="row g-3 mb-3 cp-card-grid">
+  <div class="col-md-4">
+    <div class="card cp-card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small mb-1"><i class="fa-solid fa-boxes-stacked me-1"></i>Total de presentes</div>
+        <div class="h4 mb-0">{{ total }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card cp-card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small mb-1"><i class="fa-solid fa-check me-1"></i>Reservados</div>
+        <div class="h4 mb-0">{{ reserved }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card cp-card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small mb-1"><i class="fa-solid fa-unlock me-1"></i>Disponíveis</div>
+        <div class="h4 mb-0">{{ available }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card cp-card shadow-sm mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="fw-semibold"><i class="fa-solid fa-chart-simple me-2"></i>Progresso de reservas</div>
+      <div class="text-muted small">{{ percent_display }}%</div>
+    </div>
+    <div class="progress cp-progress-dashboard mt-2">
+      <div class="progress-bar" style="width: {{ percent_css }}%"></div>
+    </div>
+  </div>
+</div>
+
+<div class="card cp-card shadow-sm">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="fw-semibold"><i class="fa-solid fa-list-check me-2"></i>Status do catálogo</div>
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'painel_mensagens' %}">
+        <i class="fa-regular fa-message me-1"></i>Ver mensagens anônimas
+      </a>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Presente</th>
+            <th class="text-center" style="width: 160px;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for g in gifts %}
+            <tr>
+              <td>{{ g.title }}</td>
+              <td class="text-center">
+                {% if g.reserved %}
+                  <span class="badge text-bg-success"><i class="fa-solid fa-check me-1"></i>Reservado</span>
+                {% else %}
+                  <span class="badge text-bg-secondary"><i class="fa-solid fa-unlock me-1"></i>Disponível</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="2" class="text-muted">Nenhum presente cadastrado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ site_settings.site_title }}</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <!-- FontAwesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/css/styles.css">
+
+  <style>
+    :root{
+      --cp-primary: #7a4b2e;
+      --cp-secondary: #b07a55;
+      --cp-bg: #f7f1e8;
+      --cp-text: #2f2018;
+      --cp-card: #fffaf4;
+      --cp-muted: #6b4f3d;
+    }
+  </style>
+</head>
+<body class="cp-body">
+<div class="cp-decor" aria-hidden="true">
+  <span class="cp-blob cp-blob-1"></span>
+  <span class="cp-blob cp-blob-2"></span>
+  <span class="cp-blob cp-blob-3"></span>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark cp-navbar">
+  <div class="container">
+    <a class="navbar-brand fw-semibold cp-brand" href="{% url 'catalogo' %}">
+      <span class="cp-brand-icon"><i class="fa-solid fa-gift"></i></span>
+      <span class="cp-brand-text">{{ site_settings.site_title }}</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav mx-auto mb-2 mb-lg-0 cp-nav-center">
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'catalogo' %}">
+              <i class="fa-solid fa-list me-1"></i>Catálogo
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'meus_presentes' %}">
+              <i class="fa-solid fa-bookmark me-1"></i>Meus presentes
+              {% if my_reserved_count %}
+                <span class="badge text-bg-light ms-1">{{ my_reserved_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          {% if user.is_staff or user.is_superuser or user.profile.is_couple_admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'painel_dashboard' %}">
+              <i class="fa-solid fa-gear me-1"></i>Painel do casal
+            </a>
+          </li>
+          {% endif %}
+        {% endif %}
+      </ul>
+
+      <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center cp-nav-right">
+        {% if global_stats.days_left is not None %}
+          <div class="text-white-50 small">
+            <i class="fa-regular fa-calendar me-1"></i>
+            {% if global_stats.days_left > 1 %}
+              Faltam {{ global_stats.days_left }} dias
+            {% elif global_stats.days_left == 1 %}
+              Falta 1 dia
+            {% elif global_stats.days_left == 0 %}
+              Evento é hoje
+            {% else %}
+              Evento encerrado
+            {% endif %}
+          </div>
+        {% endif %}
+
+
+        {% if user.is_authenticated %}
+          <div class="cp-greeting">
+            Olá, <span class="cp-greeting-name">{{ user.username }}</span>
+          </div>
+          <div class="dropdown">
+            <a class="btn btn-sm btn-outline-light dropdown-toggle cp-profile-btn" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu do perfil">
+              <span class="cp-profile-icon"><i class="fa-solid fa-user"></i></span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'definir_senha' %}"><i class="fa-solid fa-key me-2"></i>Definir/alterar senha</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'sair' %}"><i class="fa-solid fa-right-from-bracket me-2"></i>Sair</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <a class="btn btn-sm btn-outline-light" href="{% url 'login_codigo' %}"><i class="fa-solid fa-right-to-bracket me-1"></i>Entrar</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="container my-4 cp-main">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+    </div>
+  {% endfor %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="container pb-4 cp-footer">
+  <div class="text-center small text-muted">
+    <i class="fa-regular fa-heart me-1"></i>Chá de panela — reservas anônimas.
+  </div>
+</footer>
+
+{% if show_welcome_modal %}
+<div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content cp-card">
+      <div class="modal-header border-0">
+        <h2 class="modal-title h5" id="welcomeModalLabel">Bem-vindo(a) ao Chá de Panela!</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">
+          Este site é o catálogo de presentes do chá de panela. Aqui você escolhe um presente,
+          faz a reserva e evita que outra pessoa escolha o mesmo item.
+        </p>
+        <p class="mb-0">
+          Você pode ver suas reservas em <strong>Meus presentes</strong> e, se quiser, cancelar e trocar.
+        </p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendi</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var modalEl = document.getElementById("welcomeModal");
+    if (modalEl && window.bootstrap) {
+      var modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    }
+  });
+</script>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>
