@@ -4,12 +4,12 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Exists, OuterRef
 from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .decorators import couple_admin_required
+from .decorators import couple_admin_required, observer_required
 from .forms import (
     LoginForm,
     RegistrationForm,
@@ -127,6 +127,8 @@ def cadastro(request):
         email = (form.cleaned_data.get("email") or "").strip().lower()
         phone = form.cleaned_data.get("phone_number") or ""
         password = form.cleaned_data.get("password1") or ""
+        is_couple = bool(form.cleaned_data.get("is_couple"))
+        partner_name = (form.cleaned_data.get("partner_name") or "").strip()
 
         existing_user = getattr(form, "existing_user", None)
         if existing_user:
@@ -140,13 +142,23 @@ def cadastro(request):
         user.email = email
         user.first_name = full_name
         user.set_password(password)
-        user.save()
+        try:
+            user.save()
+        except IntegrityError:
+            if existing_user:
+                raise
+            # Garante unicidade mesmo em casos de colisao de username
+            fallback = f"{email}-{User.objects.count() + 1}"
+            user.username = _unique_username_from_email(fallback)
+            user.save()
 
         profile = getattr(user, "profile", None)
         if not profile:
             profile = Profile.objects.create(user=user)
         profile.phone_number = phone
-        profile.save(update_fields=["phone_number"])
+        profile.is_couple = is_couple
+        profile.partner_name = partner_name
+        profile.save(update_fields=["phone_number", "is_couple", "partner_name"])
 
         login(request, user)
         request.session["show_welcome_modal"] = True
@@ -175,7 +187,10 @@ def definir_senha(request):
 
 @login_required
 def catalogo(request):
-    qs = Gift.objects.filter(is_active=True).order_by("title")
+    qs = Gift.objects.filter(is_active=True).order_by("title").select_related(
+        "reservation__user",
+        "reservation__user__profile",
+    )
 
     reserved_exists = Reservation.objects.filter(gift=OuterRef("pk"))
     reserved_by_me = Reservation.objects.filter(gift=OuterRef("pk"), user=request.user)
@@ -349,7 +364,12 @@ def painel_personalizacao(request):
 @couple_admin_required
 def painel_mensagens(request):
     # Mensagens anonimas (nao exibimos usuario)
-    base_qs = Reservation.objects.exclude(anonymous_message="").select_related("gift").order_by("-created_at")
+    base_qs = (
+        Reservation.objects.exclude(anonymous_message="")
+        .filter(message_hidden_for_admin=False)
+        .select_related("gift")
+        .order_by("-created_at")
+    )
     unseen = base_qs.filter(message_seen=False)
     seen = base_qs.filter(message_seen=True)
     return render(
@@ -368,7 +388,7 @@ def painel_mensagens(request):
 def marcar_mensagem_vista(request, reservation_id: int):
     if request.method != "POST":
         return HttpResponseForbidden("Metodo nao permitido.")
-    Reservation.objects.filter(id=reservation_id).update(message_seen=True)
+    Reservation.objects.filter(id=reservation_id, message_hidden_for_admin=False).update(message_seen=True)
     return redirect(request.META.get("HTTP_REFERER", "painel_mensagens"))
 
 
@@ -376,5 +396,103 @@ def marcar_mensagem_vista(request, reservation_id: int):
 def marcar_todas_mensagens_vistas(request):
     if request.method != "POST":
         return HttpResponseForbidden("Metodo nao permitido.")
-    Reservation.objects.exclude(anonymous_message="").filter(message_seen=False).update(message_seen=True)
+    Reservation.objects.exclude(anonymous_message="").filter(
+        message_seen=False,
+        message_hidden_for_admin=False,
+    ).update(message_seen=True)
     return redirect(request.META.get("HTTP_REFERER", "painel_mensagens"))
+
+
+@observer_required
+def observador_mensagens(request):
+    reservations = (
+        Reservation.objects.exclude(anonymous_message="")
+        .select_related("gift", "user", "user__profile")
+        .order_by("-created_at")
+    )
+    users = User.objects.select_related("profile").order_by("first_name", "username")
+    reservations_by_user = {}
+    for reservation in Reservation.objects.select_related("gift", "user").order_by("gift__title"):
+        reservations_by_user.setdefault(reservation.user_id, []).append(reservation)
+
+    observer_users = []
+    for user in users:
+        profile = getattr(user, "profile", None)
+        display_name = profile.display_name if profile else (user.get_full_name() or user.username)
+        user_reservations = reservations_by_user.get(user.id, [])
+        observer_users.append(
+            {
+                "id": user.id,
+                "name": display_name,
+                "email": user.email,
+                "reservations": user_reservations,
+                "gifts": [res.gift.title for res in user_reservations],
+            }
+        )
+
+    return render(
+        request,
+        "observador/mensagens.html",
+        {"reservations": reservations, "observer_users": observer_users},
+    )
+
+
+@observer_required
+def observador_ocultar_mensagem(request, reservation_id: int):
+    if request.method != "POST":
+        return HttpResponseForbidden("Metodo nao permitido.")
+    Reservation.objects.filter(id=reservation_id).update(message_hidden_for_admin=True)
+    return redirect(request.META.get("HTTP_REFERER", "observador_mensagens"))
+
+
+@observer_required
+def observador_mostrar_mensagem(request, reservation_id: int):
+    if request.method != "POST":
+        return HttpResponseForbidden("Metodo nao permitido.")
+    Reservation.objects.filter(id=reservation_id).update(message_hidden_for_admin=False)
+    return redirect(request.META.get("HTTP_REFERER", "observador_mensagens"))
+
+
+@observer_required
+def observador_excluir_mensagem(request, reservation_id: int):
+    if request.method != "POST":
+        return HttpResponseForbidden("Metodo nao permitido.")
+    Reservation.objects.filter(id=reservation_id).update(
+        anonymous_message="",
+        message_hidden_for_admin=True,
+        message_seen=True,
+    )
+    return redirect(request.META.get("HTTP_REFERER", "observador_mensagens"))
+
+
+@observer_required
+def observador_alterar_senha(request, user_id: int):
+    if request.method != "POST":
+        return HttpResponseForbidden("Metodo nao permitido.")
+    password1 = (request.POST.get("password1") or "").strip()
+    password2 = (request.POST.get("password2") or "").strip()
+    if not password1 or not password2:
+        messages.error(request, "Informe a nova senha e a confirmacao.")
+        return redirect(request.META.get("HTTP_REFERER", "observador_mensagens"))
+    if password1 != password2:
+        messages.error(request, "As senhas nao conferem.")
+        return redirect(request.META.get("HTTP_REFERER", "observador_mensagens"))
+
+    user = get_object_or_404(User, id=user_id)
+    user.set_password(password1)
+    user.save(update_fields=["password"])
+    messages.success(request, "Senha atualizada com sucesso.")
+    return redirect(request.META.get("HTTP_REFERER", "observador_mensagens"))
+
+
+@observer_required
+def observador_remover_reservas(request, user_id: int):
+    if request.method != "POST":
+        return HttpResponseForbidden("Metodo nao permitido.")
+    reservation_ids = request.POST.getlist("reservation_ids")
+    if not reservation_ids:
+        messages.info(request, "Nenhuma reserva selecionada.")
+        return redirect(request.META.get("HTTP_REFERER", "observador_mensagens"))
+    Reservation.objects.filter(user_id=user_id, id__in=reservation_ids).delete()
+    messages.success(request, "Reservas removidas.")
+    return redirect(request.META.get("HTTP_REFERER", "observador_mensagens"))

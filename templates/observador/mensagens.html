@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="cp-page-head mb-3">
+  <div>
+    <h1 class="cp-title-sm mb-1"><i class="fa-regular fa-eye me-2"></i>Observador</h1>
+    <div class="cp-subtitle small">
+      Aqui voce consegue ver quem reservou cada presente e as mensagens enviadas.
+    </div>
+  </div>
+  <div class="cp-page-actions">
+    <a class="btn btn-outline-secondary" href="{% url 'catalogo' %}">
+      <i class="fa-solid fa-arrow-left me-2"></i>Voltar ao catalogo
+    </a>
+  </div>
+</section>
+
+{% if reservations %}
+  <div class="row g-3 cp-card-grid">
+    {% for r in reservations %}
+      <div class="col-lg-6">
+        <div class="card cp-card shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="fw-semibold">{{ r.gift.title }}</div>
+              <div class="text-muted small">{{ r.created_at|date:"d/m/Y H:i" }}</div>
+            </div>
+            <div class="small text-muted mb-2">
+              <i class="fa-solid fa-user-check me-1"></i>
+              Reservado por {{ r.reserver_name }}
+            </div>
+            <div class="border rounded p-3 bg-light">
+              <div class="small text-muted">{{ r.anonymous_message|linebreaksbr }}</div>
+            </div>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <div class="small text-muted">
+                  {% if r.message_hidden_for_admin %}
+                    <i class="fa-solid fa-eye-slash me-1"></i>Oculta para admin
+                  {% else %}
+                    <i class="fa-regular fa-eye me-1"></i>Visivel para admin
+                  {% endif %}
+                </div>
+                <div class="d-flex gap-2">
+                  {% if not r.message_hidden_for_admin %}
+                    <form method="post" action="{% url 'observador_ocultar_mensagem' r.id %}" data-confirm="Deseja ocultar esta mensagem do admin?">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-secondary" type="submit">
+                        <i class="fa-solid fa-eye-slash me-1"></i>Ocultar
+                      </button>
+                    </form>
+                  {% else %}
+                    <form method="post" action="{% url 'observador_mostrar_mensagem' r.id %}" data-confirm="Deseja tornar esta mensagem visivel para o admin?">
+                      {% csrf_token %}
+                      <button class="btn btn-sm btn-outline-secondary" type="submit">
+                        <i class="fa-regular fa-eye me-1"></i>Deixar visivel
+                      </button>
+                    </form>
+                  {% endif %}
+                  <form method="post" action="{% url 'observador_excluir_mensagem' r.id %}" data-confirm="Deseja excluir esta mensagem? Esta acao nao pode ser desfeita.">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-danger" type="submit">
+                      <i class="fa-solid fa-trash me-1"></i>Excluir
+                    </button>
+                  </form>
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-secondary">
+    Ainda nao ha mensagens.
+  </div>
+{% endif %}
+
+  <div class="card cp-card shadow-sm mt-4">
+  <div class="card-body">
+    <div class="fw-semibold mb-2"><i class="fa-solid fa-users me-2"></i>Lista de usuarios</div>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Presente reservado</th>
+            <th class="text-end">Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in observer_users %}
+            <tr>
+              <td class="fw-semibold">{{ item.name }}</td>
+              <td>
+                {% if item.gifts %}
+                  {{ item.gifts|join:", " }}
+                {% else %}
+                  <span class="text-muted">Nenhum</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#obsUser{{ item.id }}">
+                  Gerenciar
+                </button>
+              </td>
+            </tr>
+            <tr class="collapse" id="obsUser{{ item.id }}">
+              <td colspan="3">
+                <div class="row g-3">
+                  <div class="col-lg-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                      <div class="fw-semibold mb-2"><i class="fa-solid fa-key me-2"></i>Alterar senha</div>
+                      <form method="post" action="{% url 'observador_alterar_senha' item.id %}" data-confirm="Deseja alterar a senha deste usuario?">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                          <input type="password" name="password1" class="form-control" placeholder="Nova senha">
+                        </div>
+                        <div class="mb-2">
+                          <input type="password" name="password2" class="form-control" placeholder="Confirmar senha">
+                        </div>
+                        <button class="btn btn-sm btn-primary" type="submit">Salvar senha</button>
+                      </form>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="border rounded p-3 bg-light h-100">
+                      <div class="fw-semibold mb-2"><i class="fa-solid fa-eraser me-2"></i>Remover reservas</div>
+                      {% if item.reservations %}
+                        <form method="post" action="{% url 'observador_remover_reservas' item.id %}" data-confirm="Deseja remover as reservas selecionadas?">
+                          {% csrf_token %}
+                          <div class="d-flex flex-column gap-2 mb-2">
+                            {% for res in item.reservations %}
+                              <label class="form-check">
+                                <input class="form-check-input" type="checkbox" name="reservation_ids" value="{{ res.id }}">
+                                <span class="form-check-label">{{ res.gift.title }}</span>
+                              </label>
+                            {% endfor %}
+                          </div>
+                          <button class="btn btn-sm btn-outline-danger" type="submit">Remover selecionadas</button>
+                        </form>
+                      {% else %}
+                        <div class="text-muted small">Nenhuma reserva para remover.</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

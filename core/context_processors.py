@@ -22,7 +22,12 @@ def site_context(request):
         profile = getattr(request.user, "profile", None)
         is_admin = request.user.is_staff or request.user.is_superuser or (profile and profile.is_couple_admin)
         if is_admin:
-            base_qs = Reservation.objects.exclude(anonymous_message="").select_related("gift").order_by("-created_at")
+            base_qs = (
+                Reservation.objects.exclude(anonymous_message="")
+                .filter(message_hidden_for_admin=False)
+                .select_related("gift")
+                .order_by("-created_at")
+            )
             unseen_qs = base_qs.filter(message_seen=False)
             seen_qs = base_qs.filter(message_seen=True)
             admin_messages = {

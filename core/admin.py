@@ -16,7 +16,7 @@ class GiftAdmin(admin.ModelAdmin):
 
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = ("gift", "created_at")
+    list_display = ("gift", "created_at", "message_hidden_for_admin", "message_seen")
     search_fields = ("gift__title",)
     # Nao exibimos o usuario em list_display para reduzir chance de vazamento em consultas rapidas.
     # Para auditoria tecnica, voce pode abrir o registro individual.
@@ -24,6 +24,6 @@ class ReservationAdmin(admin.ModelAdmin):
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "phone_number", "is_couple_admin", "created_at")
-    list_filter = ("is_couple_admin",)
-    search_fields = ("phone_number", "user__username", "user__email", "user__first_name")
+    list_display = ("user", "phone_number", "is_couple_admin", "is_observer", "is_couple", "partner_name", "created_at")
+    list_filter = ("is_couple_admin", "is_observer", "is_couple")
+    search_fields = ("phone_number", "user__username", "user__email", "user__first_name", "partner_name")

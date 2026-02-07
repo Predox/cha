@@ -15,3 +15,15 @@ def couple_admin_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped
+
+
+def observer_required(view_func):
+    @wraps(view_func)
+    @login_required
+    def _wrapped(request, *args, **kwargs):
+        profile = getattr(request.user, "profile", None)
+        if not profile or not profile.is_observer:
+            return HttpResponseForbidden("Acesso restrito ao observador.")
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped

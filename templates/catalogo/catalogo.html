@@ -4,7 +4,7 @@
 <section class="cp-hero mb-4">
   <div class="cp-hero-content">
     <div class="cp-hero-tag">
-      <i class="fa-solid fa-heart me-2"></i>Chá de panela divertido
+      <i class="fa-solid fa-heart me-2"></i>Chá de panela
     </div>
     <h1 class="cp-title mb-2"><i class="fa-solid fa-list me-2"></i>Catálogo de presentes</h1>
     <p class="cp-subtitle mb-3">
@@ -78,6 +78,13 @@
             <p class="cp-card-desc text-muted small mb-3">{{ gift.description|linebreaksbr }}</p>
           {% else %}
             <p class="cp-card-desc text-muted small mb-3">Sem descrição.</p>
+          {% endif %}
+
+          {% if gift.reserved and user.profile.is_observer %}
+            <div class="small text-muted mb-3">
+              <i class="fa-solid fa-user-check me-1"></i>
+              Reservado por {{ gift.reservation.reserver_name }}
+            </div>
           {% endif %}
 
           <div class="mt-auto cp-card-actions">
@@ -176,6 +183,47 @@
                           {{ link.label }}
                         </a>
                       {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+
+                {% if gift.reserved and user.profile.is_observer %}
+                  <div class="cp-link-section mt-3">
+                    <div class="fw-semibold mb-2"><i class="fa-regular fa-message me-2"></i>Mensagem da reserva</div>
+                    <div class="small text-muted mb-2">
+                      Reservado por {{ gift.reservation.reserver_name }}
+                    </div>
+                    <div class="border rounded p-3 bg-light mb-2">
+                      {% if gift.reservation.anonymous_message %}
+                        <div class="small text-muted">{{ gift.reservation.anonymous_message|linebreaksbr }}</div>
+                      {% else %}
+                        <div class="small text-muted"><em>Mensagem excluída.</em></div>
+                      {% endif %}
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                      {% if gift.reservation.anonymous_message %}
+                        <form method="post" action="{% url 'observador_excluir_mensagem' gift.reservation.id %}" data-confirm="Deseja excluir esta mensagem? Esta acao nao pode ser desfeita.">
+                          {% csrf_token %}
+                          <button class="btn btn-sm btn-outline-danger" type="submit">
+                            <i class="fa-solid fa-trash me-1"></i>Excluir mensagem
+                          </button>
+                        </form>
+                      {% endif %}
+                      {% if not gift.reservation.message_hidden_for_admin and gift.reservation.anonymous_message %}
+                        <form method="post" action="{% url 'observador_ocultar_mensagem' gift.reservation.id %}" data-confirm="Deseja ocultar esta mensagem do admin?">
+                          {% csrf_token %}
+                          <button class="btn btn-sm btn-outline-secondary" type="submit">
+                            <i class="fa-solid fa-eye-slash me-1"></i>Ocultar do admin
+                          </button>
+                        </form>
+                      {% elif gift.reservation.message_hidden_for_admin %}
+                        <form method="post" action="{% url 'observador_mostrar_mensagem' gift.reservation.id %}" data-confirm="Deseja tornar esta mensagem visivel para o admin?">
+                          {% csrf_token %}
+                          <button class="btn btn-sm btn-outline-secondary" type="submit">
+                            <i class="fa-regular fa-eye me-1"></i>Deixar visivel
+                          </button>
+                        </form>
+                      {% endif %}
                     </div>
                   </div>
                 {% endif %}

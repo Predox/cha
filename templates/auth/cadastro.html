@@ -21,6 +21,19 @@
                 <div class="text-danger small">{{ form.full_name.errors }}</div>
               {% endif %}
             </div>
+            <div class="col-12">
+              <div class="form-check">
+                {{ form.is_couple }}
+                <label class="form-check-label" for="{{ form.is_couple.id_for_label }}">{{ form.is_couple.label }}</label>
+              </div>
+            </div>
+            <div class="col-12 d-none" data-couple-fields>
+              {{ form.partner_name.label_tag }}
+              {{ form.partner_name }}
+              {% if form.partner_name.errors %}
+                <div class="text-danger small">{{ form.partner_name.errors }}</div>
+              {% endif %}
+            </div>
             <div class="col-md-6">
               {{ form.phone_number.label_tag }}
               {{ form.phone_number }}

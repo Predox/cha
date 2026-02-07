@@ -77,6 +77,17 @@ class RegistrationForm(forms.Form):
         max_length=150,
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Seu nome completo"}),
     )
+    is_couple = forms.BooleanField(
+        label="Cadastro para casal",
+        required=False,
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input", "data-couple-toggle": "true"}),
+    )
+    partner_name = forms.CharField(
+        label="Nome do parceiro(a)",
+        required=False,
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Nome do parceiro(a)"}),
+    )
     phone_number = forms.CharField(
         label="Telefone",
         max_length=20,
@@ -108,9 +119,16 @@ class RegistrationForm(forms.Form):
         phone = cleaned.get("phone_number") or ""
         p1 = cleaned.get("password1") or ""
         p2 = cleaned.get("password2") or ""
+        is_couple = bool(cleaned.get("is_couple"))
+        partner_name = (cleaned.get("partner_name") or "").strip()
 
         if p1 and p2 and p1 != p2:
             raise forms.ValidationError("As senhas nao conferem.")
+
+        if is_couple and not partner_name:
+            raise forms.ValidationError("Informe o nome do parceiro(a).")
+        if not is_couple:
+            partner_name = ""
 
         existing_user = None
         if email:
@@ -133,6 +151,7 @@ class RegistrationForm(forms.Form):
 
         self.existing_user = existing_user
         cleaned["email"] = email
+        cleaned["partner_name"] = partner_name
         return cleaned
 
 

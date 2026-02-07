@@ -174,3 +174,59 @@
     render();
   });
 })();
+
+(function () {
+  var toggle = document.querySelector("[data-couple-toggle]");
+  var fields = document.querySelector("[data-couple-fields]");
+  if (!toggle || !fields) {
+    return;
+  }
+
+  function updateVisibility() {
+    if (toggle.checked) {
+      fields.classList.remove("d-none");
+    } else {
+      fields.classList.add("d-none");
+    }
+  }
+
+  toggle.addEventListener("change", updateVisibility);
+  updateVisibility();
+})();
+
+(function () {
+  var modalEl = document.getElementById("confirmModal");
+  var messageEl = document.getElementById("confirmModalMessage");
+  var confirmBtn = document.getElementById("confirmModalConfirm");
+  if (!modalEl || !messageEl || !confirmBtn || !window.bootstrap) {
+    return;
+  }
+
+  var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  var pendingForm = null;
+
+  document.addEventListener("submit", function (event) {
+    var form = event.target.closest("form[data-confirm]");
+    if (!form) {
+      return;
+    }
+    if (form.dataset.confirming === "1") {
+      form.removeAttribute("data-confirming");
+      return;
+    }
+    event.preventDefault();
+    pendingForm = form;
+    messageEl.textContent = form.getAttribute("data-confirm") || "Tem certeza?";
+    modal.show();
+  });
+
+  confirmBtn.addEventListener("click", function () {
+    if (!pendingForm) {
+      return;
+    }
+    pendingForm.dataset.confirming = "1";
+    modal.hide();
+    pendingForm.submit();
+    pendingForm = null;
+  });
+})();

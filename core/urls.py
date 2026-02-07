@@ -30,4 +30,32 @@ urlpatterns = [
     path("painel/mensagens/", views.painel_mensagens, name="painel_mensagens"),
     path("painel/mensagens/<int:reservation_id>/visto/", views.marcar_mensagem_vista, name="marcar_mensagem_vista"),
     path("painel/mensagens/vistas/", views.marcar_todas_mensagens_vistas, name="marcar_todas_mensagens_vistas"),
+
+    # Observador
+    path("observador/mensagens/", views.observador_mensagens, name="observador_mensagens"),
+    path(
+        "observador/mensagens/<int:reservation_id>/ocultar/",
+        views.observador_ocultar_mensagem,
+        name="observador_ocultar_mensagem",
+    ),
+    path(
+        "observador/mensagens/<int:reservation_id>/mostrar/",
+        views.observador_mostrar_mensagem,
+        name="observador_mostrar_mensagem",
+    ),
+    path(
+        "observador/mensagens/<int:reservation_id>/excluir/",
+        views.observador_excluir_mensagem,
+        name="observador_excluir_mensagem",
+    ),
+    path(
+        "observador/usuarios/<int:user_id>/senha/",
+        views.observador_alterar_senha,
+        name="observador_alterar_senha",
+    ),
+    path(
+        "observador/usuarios/<int:user_id>/reservas/remover/",
+        views.observador_remover_reservas,
+        name="observador_remover_reservas",
+    ),
 ]
