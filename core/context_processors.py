@@ -15,8 +15,22 @@ def site_context(request):
         days_left = (settings.event_date - date.today()).days
 
     my_reserved_count = 0
+    admin_messages = None
     if request.user.is_authenticated:
         my_reserved_count = Reservation.objects.filter(user=request.user).count()
+
+        profile = getattr(request.user, "profile", None)
+        is_admin = request.user.is_staff or request.user.is_superuser or (profile and profile.is_couple_admin)
+        if is_admin:
+            base_qs = Reservation.objects.exclude(anonymous_message="").select_related("gift").order_by("-created_at")
+            unseen_qs = base_qs.filter(message_seen=False)
+            seen_qs = base_qs.filter(message_seen=True)
+            admin_messages = {
+                "unseen": list(unseen_qs),
+                "seen": list(seen_qs),
+                "unseen_count": unseen_qs.count(),
+                "seen_count": seen_qs.count(),
+            }
 
     show_welcome_modal = bool(request.session.pop("show_welcome_modal", False))
 
@@ -31,4 +45,5 @@ def site_context(request):
         },
         "my_reserved_count": my_reserved_count,
         "show_welcome_modal": show_welcome_modal,
+        "admin_messages": admin_messages,
     }

@@ -38,7 +38,10 @@
   <div class="container">
     <a class="navbar-brand fw-semibold cp-brand" href="{% url 'catalogo' %}">
       <span class="cp-brand-icon"><i class="fa-solid fa-gift"></i></span>
-      <span class="cp-brand-text">{{ site_settings.site_title }}</span>
+      <span class="cp-brand-text">
+        <span class="cp-brand-main">Chá de Panela</span>
+        <span class="cp-brand-sub">Isadora & Jonathan</span>
+      </span>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menu">
       <span class="navbar-toggler-icon"></span>
@@ -89,8 +92,89 @@
 
         {% if user.is_authenticated %}
           <div class="cp-greeting">
-            Olá, <span class="cp-greeting-name">{{ user.username }}</span>
+            Olá, <span class="cp-greeting-name">{{ user.get_full_name|default:user.username }}</span>
           </div>
+          {% if admin_messages %}
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-light cp-notif-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Notificações">
+              <i class="fa-regular fa-bell"></i>
+              {% if admin_messages.unseen_count %}
+                <span class="cp-notif-dot" aria-hidden="true"></span>
+              {% endif %}
+            </button>
+            <div class="dropdown-menu dropdown-menu-end cp-notif-menu p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="fw-semibold">Mensagens</div>
+                <form method="post" action="{% url 'marcar_todas_mensagens_vistas' %}">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-outline-secondary" type="submit">Marcar todas</button>
+                </form>
+              </div>
+
+              <ul class="nav nav-pills nav-fill cp-notif-tabs mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#cp-notif-unseen" type="button" role="tab">
+                    Não vistos ({{ admin_messages.unseen_count }})
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#cp-notif-seen" type="button" role="tab">
+                    Vistos ({{ admin_messages.seen_count }})
+                  </button>
+                </li>
+              </ul>
+
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="cp-notif-unseen" role="tabpanel">
+                  {% if admin_messages.unseen %}
+                    <div class="cp-notif-list">
+                      {% for r in admin_messages.unseen %}
+                        <div class="cp-notif-item">
+                          <div class="cp-notif-content">
+                            <div class="cp-notif-title">{{ r.gift.title }}</div>
+                            <div class="cp-notif-text">{{ r.anonymous_message|linebreaksbr }}</div>
+                            <div class="cp-notif-time">{{ r.created_at|date:"d/m/Y H:i" }}</div>
+                          </div>
+                          <form method="post" action="{% url 'marcar_mensagem_vista' r.id %}">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-secondary" type="submit" title="Marcar como visto">
+                              <i class="fa-solid fa-check"></i>
+                            </button>
+                          </form>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <div class="text-muted small">Nenhuma mensagem nova.</div>
+                  {% endif %}
+                </div>
+                <div class="tab-pane fade" id="cp-notif-seen" role="tabpanel">
+                  {% if admin_messages.seen %}
+                    <div class="cp-notif-list">
+                      {% for r in admin_messages.seen %}
+                        <div class="cp-notif-item">
+                          <div class="cp-notif-content">
+                            <div class="cp-notif-title">{{ r.gift.title }}</div>
+                            <div class="cp-notif-text">{{ r.anonymous_message|linebreaksbr }}</div>
+                            <div class="cp-notif-time">{{ r.created_at|date:"d/m/Y H:i" }}</div>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% else %}
+                    <div class="text-muted small">Nenhuma mensagem vista.</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="mt-3 text-center">
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'painel_mensagens' %}">
+                  Ver todas as mensagens
+                </a>
+              </div>
+            </div>
+          </div>
+          {% endif %}
           <div class="dropdown">
             <a class="btn btn-sm btn-outline-light dropdown-toggle cp-profile-btn" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Abrir menu do perfil">
               <span class="cp-profile-icon"><i class="fa-solid fa-user"></i></span>
@@ -102,7 +186,8 @@
             </ul>
           </div>
         {% else %}
-          <a class="btn btn-sm btn-outline-light" href="{% url 'login_codigo' %}"><i class="fa-solid fa-right-to-bracket me-1"></i>Entrar</a>
+          <a class="btn btn-sm btn-outline-light" href="{% url 'login' %}"><i class="fa-solid fa-right-to-bracket me-1"></i>Entrar</a>
+          <a class="btn btn-sm btn-light" href="{% url 'cadastro' %}"><i class="fa-solid fa-user-plus me-1"></i>Cadastrar</a>
         {% endif %}
       </div>
     </div>

@@ -1,58 +1,98 @@
 {% extends "base.html" %}
 {% block content %}
 
-<section class="cp-page-head mb-3">
-  <div>
-    <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-gear me-2"></i>Painel do casal</h1>
-    <div class="cp-subtitle small">
+<section class="cp-hero mb-4">
+  <div class="cp-hero-content">
+    <span class="cp-hero-tag"><i class="fa-solid fa-gear me-2"></i>Painel do casal</span>
+    <h1 class="cp-title mb-2">Gestão do catálogo</h1>
+    <p class="cp-subtitle mb-3">
       As reservas são anônimas: este painel não mostra quem reservou cada presente.
+    </p>
+    <div class="cp-hero-actions flex-wrap">
+      <a class="btn btn-primary" href="{% url 'painel_presente_novo' %}">
+        <i class="fa-solid fa-plus me-2"></i>Novo presente
+      </a>
+      <a class="btn btn-outline-secondary" href="{% url 'painel_presentes' %}">
+        <i class="fa-solid fa-gift me-2"></i>Gerenciar presentes
+      </a>
+      <a class="btn btn-outline-secondary" href="{% url 'painel_personalizacao' %}">
+        <i class="fa-solid fa-palette me-2"></i>Personalização
+      </a>
     </div>
   </div>
-  <div class="cp-page-actions d-flex gap-2">
-    <a class="btn btn-outline-secondary" href="{% url 'painel_presentes' %}">
-      <i class="fa-solid fa-gift me-2"></i>Gerenciar presentes
-    </a>
-    <a class="btn btn-outline-secondary" href="{% url 'painel_personalizacao' %}">
-      <i class="fa-solid fa-palette me-2"></i>Personalização
-    </a>
+
+  <div class="cp-progress-wrap">
+    <div class="cp-progress-header">
+      <span class="cp-progress-label">Progresso de reservas</span>
+      <span class="cp-progress-value">{{ percent_display }}%</span>
+    </div>
+    <div class="progress cp-progress-dashboard">
+      <div class="progress-bar" style="width: {{ percent_css }}%"></div>
+    </div>
+    {% if days_left is not None %}
+      <div class="mt-3 small text-muted">
+        <i class="fa-regular fa-calendar me-1"></i>
+        {% if days_left > 1 %}
+          Faltam {{ days_left }} dias para o evento
+        {% elif days_left == 1 %}
+          Falta 1 dia para o evento
+        {% elif days_left == 0 %}
+          O evento é hoje
+        {% else %}
+          Evento encerrado
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
 </section>
 
-<div class="row g-3 mb-3 cp-card-grid">
-  <div class="col-md-4">
-    <div class="card cp-card shadow-sm">
-      <div class="card-body">
-        <div class="text-muted small mb-1"><i class="fa-solid fa-boxes-stacked me-1"></i>Total de presentes</div>
-        <div class="h4 mb-0">{{ total }}</div>
-      </div>
-    </div>
+<div class="cp-statline mb-4">
+  <div class="cp-stat">
+    <span>Total de presentes</span>
+    <strong>{{ total }}</strong>
   </div>
-  <div class="col-md-4">
-    <div class="card cp-card shadow-sm">
-      <div class="card-body">
-        <div class="text-muted small mb-1"><i class="fa-solid fa-check me-1"></i>Reservados</div>
-        <div class="h4 mb-0">{{ reserved }}</div>
-      </div>
-    </div>
+  <div class="cp-stat">
+    <span>Reservados</span>
+    <strong>{{ reserved }}</strong>
   </div>
-  <div class="col-md-4">
-    <div class="card cp-card shadow-sm">
-      <div class="card-body">
-        <div class="text-muted small mb-1"><i class="fa-solid fa-unlock me-1"></i>Disponíveis</div>
-        <div class="h4 mb-0">{{ available }}</div>
-      </div>
-    </div>
+  <div class="cp-stat">
+    <span>Disponíveis</span>
+    <strong>{{ available }}</strong>
   </div>
 </div>
 
-<div class="card cp-card shadow-sm mb-3">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="fw-semibold"><i class="fa-solid fa-chart-simple me-2"></i>Progresso de reservas</div>
-      <div class="text-muted small">{{ percent_display }}%</div>
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-lg-4">
+    <div class="card cp-card shadow-sm h-100">
+      <div class="card-body">
+        <div class="fw-semibold mb-1"><i class="fa-solid fa-gift me-2"></i>Organize o catálogo</div>
+        <div class="text-muted small mb-3">Adicione novos itens, ajuste fotos e descrições quando precisar.</div>
+        <a class="btn btn-outline-secondary w-100" href="{% url 'painel_presentes' %}">
+          Ver presentes
+        </a>
+      </div>
     </div>
-    <div class="progress cp-progress-dashboard mt-2">
-      <div class="progress-bar" style="width: {{ percent_css }}%"></div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="card cp-card shadow-sm h-100">
+      <div class="card-body">
+        <div class="fw-semibold mb-1"><i class="fa-regular fa-message me-2"></i>Mensagens anônimas</div>
+        <div class="text-muted small mb-3">Leia os recados deixados pelos convidados nas reservas.</div>
+        <a class="btn btn-outline-secondary w-100" href="{% url 'painel_mensagens' %}">
+          Ver mensagens
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="card cp-card shadow-sm h-100">
+      <div class="card-body">
+        <div class="fw-semibold mb-1"><i class="fa-solid fa-palette me-2"></i>Personalize o site</div>
+        <div class="text-muted small mb-3">Ajuste cores e data do evento para deixar tudo com a cara do casal.</div>
+        <a class="btn btn-outline-secondary w-100" href="{% url 'painel_personalizacao' %}">
+          Abrir personalização
+        </a>
+      </div>
     </div>
   </div>
 </div>
@@ -62,7 +102,7 @@
     <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="fw-semibold"><i class="fa-solid fa-list-check me-2"></i>Status do catálogo</div>
       <a class="btn btn-sm btn-outline-secondary" href="{% url 'painel_mensagens' %}">
-        <i class="fa-regular fa-message me-1"></i>Ver mensagens anônimas
+        <i class="fa-regular fa-message me-1"></i>Ver mensagens
       </a>
     </div>
     <div class="table-responsive">

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SiteSettings, Gift, Reservation, VerificationCode, Profile
+from .models import SiteSettings, Gift, Reservation, Profile
 
 
 @admin.register(SiteSettings)
@@ -18,18 +18,12 @@ class GiftAdmin(admin.ModelAdmin):
 class ReservationAdmin(admin.ModelAdmin):
     list_display = ("gift", "created_at")
     search_fields = ("gift__title",)
-    # Não exibimos o usuário em list_display para reduzir chance de vazamento em consultas rápidas.
-    # Para auditoria técnica, você pode abrir o registro individual.
-
-
-@admin.register(VerificationCode)
-class VerificationCodeAdmin(admin.ModelAdmin):
-    list_display = ("purpose", "channel", "phone_number", "email", "created_at", "expires_at", "used_at", "attempts")
-    list_filter = ("purpose", "channel")
+    # Nao exibimos o usuario em list_display para reduzir chance de vazamento em consultas rapidas.
+    # Para auditoria tecnica, voce pode abrir o registro individual.
 
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "phone_number", "is_couple_admin", "created_at")
     list_filter = ("is_couple_admin",)
-    search_fields = ("phone_number", "user__username", "user__email")
+    search_fields = ("phone_number", "user__username", "user__email", "user__first_name")

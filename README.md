@@ -2,8 +2,8 @@
 
 Este projeto implementa:
 
-- Login por **código (OTP)**: SMS (Twilio) ou **e-mail** (fallback)
-- Login por **senha** (opcional)
+- **Cadastro** com nome completo, telefone, e-mail e senha
+- Login por **nome, e-mail ou telefone** com senha
 - **Painel do casal** (admin do evento) sem acesso a quem reservou
 - **Reserva de presentes** (evita presente duplicado)
 - Reserva com **mensagem anônima** (sem identificação)
@@ -64,7 +64,8 @@ python manage.py runserver
 ```
 
 Acesse:
-- Login por código: `http://127.0.0.1:8000/login/`
+- Login: `http://127.0.0.1:8000/login/`
+- Cadastro: `http://127.0.0.1:8000/cadastro/`
 
 ---
 
@@ -95,32 +96,7 @@ Depois do setup, o casal poderá entrar e acessar o painel em:
 
 ---
 
-## 3) Login por código (SMS / e-mail)
-
-### Opção A: SMS (Twilio) – recomendado se você quiser SMS
-Configure no ambiente:
-
-- `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
-- `TWILIO_FROM_NUMBER`
-
-> O usuário informa o telefone e recebe um código por SMS.
-
-### Opção B: E-mail (fallback)
-Configure SMTP no ambiente:
-
-- `EMAIL_HOST`
-- `EMAIL_PORT`
-- `EMAIL_USE_TLS`
-- `EMAIL_HOST_USER`
-- `EMAIL_HOST_PASSWORD`
-- `DEFAULT_FROM_EMAIL`
-
-> Se o SMS não estiver configurado, o usuário deve informar um e-mail para receber o código.
-
----
-
-## 4) Como funciona a reserva (regras)
+## 3) Como funciona a reserva (regras)
 
 - Um presente pode ser reservado por **apenas uma pessoa** por vez.
 - Um usuário pode reservar **um ou mais** presentes.
@@ -129,7 +105,7 @@ Configure SMTP no ambiente:
 
 ---
 
-## 5) Painel do casal (admin do evento)
+## 4) Painel do casal (admin do evento)
 
 URL: `/painel/`
 
@@ -143,7 +119,7 @@ Funcionalidades:
 
 ---
 
-## 6) Deploy no Railway (recomendado)
+## 5) Deploy no Railway (recomendado)
 
 ### Passo a passo (caminho mais curto)
 
@@ -184,7 +160,7 @@ Esse script faz:
 
 ---
 
-## 7) Segurança importante
+## 6) Segurança importante
 
 - **Não dê acesso ao casal ao `/django-admin/`**.  
   O painel do casal é `/painel/` e é **anônimo**.
@@ -194,7 +170,7 @@ Esse script faz:
 
 ---
 
-## 8) Personalizações rápidas
+## 7) Personalizações rápidas
 
 - Você pode alterar textos e layout nos templates em `templates/`
 - CSS em `static/css/styles.css`
@@ -205,7 +181,7 @@ Esse script faz:
 ## Suporte
 
 Se você quiser que eu adapte:
-- modo "somente SMS" (obrigatório),
+- recuperação de senha por e-mail,
 - campos extras (categoria do presente, link de compra),
 - ou um modo público (catálogo sem login),
 

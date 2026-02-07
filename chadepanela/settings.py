@@ -59,16 +59,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "chadepanela.wsgi.application"
 
-# Banco de dados: SQLite local / Postgres no Railway (DATABASE_URL)
+# Banco de dados: SQLite local / Postgres via DATABASE_URL
+database_url = os.getenv("DATABASE_URL", "")
+ssl_require = database_url.startswith("postgres")
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
-        ssl_require=not DEBUG,
+        ssl_require=ssl_require,
     )
 }
 
-# Validação de senha (usada apenas se você quiser login por senha também)
+# Validação de senha
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -96,7 +98,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "/login/"
 LOGIN_REDIRECT_URL = "/catalogo/"
 
-# E-mail (para envio de código caso SMS não esteja configurado)
+# E-mail (opcional)
 # Em desenvolvimento, por padrão imprime no console.
 if DEBUG and not os.getenv("EMAIL_HOST"):
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -110,14 +112,7 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "nao-responda@exemplo.com")
 
-# SMS (Twilio) – opcional
-TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID", "")
-TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
-TWILIO_FROM_NUMBER = os.getenv("TWILIO_FROM_NUMBER", "")
-TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID", "")
-
-# OTP / Setup
-OTP_TTL_MINUTES = int(os.getenv("OTP_TTL_MINUTES", "10"))
+# Setup
 SETUP_TOKEN = os.getenv("SETUP_TOKEN", "")
 
 # Segurança extra (recomendado para produção)

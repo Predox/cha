@@ -9,15 +9,12 @@ urlpatterns = [
     path("setup/<str:token>/", views.setup, name="setup"),
 
     # Auth
-    path("login/", views.login_codigo, name="login_codigo"),
-    path("login/verificar/", views.verificar_codigo, name="verificar_codigo"),
-    path("login/senha/", views.login_senha, name="login_senha"),
+    path("login/", views.login_view, name="login"),
+    path("cadastro/", views.cadastro, name="cadastro"),
     path("sair/", views.sair, name="sair"),
-    path("esqueci-senha/", views.esqueci_senha, name="esqueci_senha"),
-    path("redefinir-senha/", views.redefinir_senha, name="redefinir_senha"),
     path("definir-senha/", views.definir_senha, name="definir_senha"),
 
-    # Catálogo
+    # Catalogo
     path("catalogo/", views.catalogo, name="catalogo"),
     path("meus-presentes/", views.meus_presentes, name="meus_presentes"),
     path("presentes/<int:gift_id>/reservar/", views.reservar_presente, name="reservar_presente"),
@@ -31,4 +28,6 @@ urlpatterns = [
     path("painel/presentes/<int:gift_id>/excluir/", views.painel_presente_excluir, name="painel_presente_excluir"),
     path("painel/personalizacao/", views.painel_personalizacao, name="painel_personalizacao"),
     path("painel/mensagens/", views.painel_mensagens, name="painel_mensagens"),
+    path("painel/mensagens/<int:reservation_id>/visto/", views.marcar_mensagem_vista, name="marcar_mensagem_vista"),
+    path("painel/mensagens/vistas/", views.marcar_todas_mensagens_vistas, name="marcar_todas_mensagens_vistas"),
 ]

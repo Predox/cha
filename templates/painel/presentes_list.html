@@ -1,75 +1,114 @@
 {% extends "base.html" %}
 {% block content %}
 
-<section class="cp-page-head mb-3">
-  <div>
-    <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-gift me-2"></i>Gerenciar presentes</h1>
-    <div class="cp-subtitle small">
-      Você pode editar/excluir apenas presentes que ainda não foram reservados.
+<section class="cp-hero mb-4">
+  <div class="cp-hero-content">
+    <span class="cp-hero-tag"><i class="fa-solid fa-gift me-2"></i>Gerenciar presentes</span>
+    <h1 class="cp-title mb-2">Catálogo organizado, reservas seguras</h1>
+    <p class="cp-subtitle mb-3">
+      Você pode editar ou excluir apenas presentes que ainda não foram reservados.
+    </p>
+    <div class="cp-hero-actions flex-wrap">
+      <a class="btn btn-primary" href="{% url 'painel_presente_novo' %}">
+        <i class="fa-solid fa-plus me-2"></i>Novo presente
+      </a>
+      <a class="btn btn-outline-secondary" href="{% url 'painel_dashboard' %}">
+        <i class="fa-solid fa-arrow-left me-2"></i>Voltar ao painel
+      </a>
     </div>
   </div>
-  <div class="cp-page-actions d-flex gap-2">
-    <a class="btn btn-primary" href="{% url 'painel_presente_novo' %}">
-      <i class="fa-solid fa-plus me-2"></i>Novo presente
-    </a>
-    <a class="btn btn-outline-secondary" href="{% url 'painel_dashboard' %}">
-      <i class="fa-solid fa-arrow-left me-2"></i>Voltar
-    </a>
+
+  <div class="cp-statline">
+    <div class="cp-stat">
+      <span>Total</span>
+      <strong>{{ total }}</strong>
+    </div>
+    <div class="cp-stat">
+      <span>Reservados</span>
+      <strong>{{ reserved }}</strong>
+    </div>
+    <div class="cp-stat">
+      <span>Disponíveis</span>
+      <strong>{{ available }}</strong>
+    </div>
   </div>
 </section>
 
-<div class="card cp-card shadow-sm">
-  <div class="card-body">
-    <div class="table-responsive">
-      <table class="table align-middle">
-        <thead>
-          <tr>
-            <th>Presente</th>
-            <th class="text-center" style="width: 140px;">Status</th>
-            <th class="text-end" style="width: 220px;">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for g in gifts %}
+{% if gifts %}
+  <div class="card cp-card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="fw-semibold"><i class="fa-solid fa-list-check me-2"></i>Lista de presentes</div>
+        <div class="text-muted small">Organize imagens, links e descrições para facilitar a escolha.</div>
+      </div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead>
             <tr>
-              <td>
-                <div class="fw-semibold">{{ g.title }}</div>
-                <div class="text-muted small">Criado em {{ g.created_at|date:"d/m/Y" }}</div>
-              </td>
-
-              <td class="text-center">
-                {% if g.reserved %}
-                  <span class="badge text-bg-success"><i class="fa-solid fa-check me-1"></i>Reservado</span>
-                {% else %}
-                  <span class="badge text-bg-secondary"><i class="fa-solid fa-unlock me-1"></i>Livre</span>
-                {% endif %}
-              </td>
-
-              <td class="text-end">
-                {% if g.reserved %}
-                  <button class="btn btn-sm btn-outline-secondary" disabled>
-                    <i class="fa-solid fa-pen-to-square me-1"></i>Editar
-                  </button>
-                  <button class="btn btn-sm btn-outline-secondary" disabled>
-                    <i class="fa-solid fa-trash me-1"></i>Excluir
-                  </button>
-                {% else %}
-                  <a class="btn btn-sm btn-outline-secondary" href="{% url 'painel_presente_editar' g.id %}">
-                    <i class="fa-solid fa-pen-to-square me-1"></i>Editar
-                  </a>
-                  <a class="btn btn-sm btn-outline-danger" href="{% url 'painel_presente_excluir' g.id %}">
-                    <i class="fa-solid fa-trash me-1"></i>Excluir
-                  </a>
-                {% endif %}
-              </td>
+              <th>Presente</th>
+              <th class="text-center" style="width: 130px;">Status</th>
+              <th class="text-center" style="width: 130px;">Ativo</th>
+              <th class="text-end" style="width: 220px;">Ações</th>
             </tr>
-          {% empty %}
-            <tr><td colspan="3" class="text-muted">Nenhum presente cadastrado.</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for g in gifts %}
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ g.title }}</div>
+                  <div class="text-muted small">Criado em {{ g.created_at|date:"d/m/Y" }}</div>
+                </td>
+
+                <td class="text-center">
+                  {% if g.reserved %}
+                    <span class="badge text-bg-success"><i class="fa-solid fa-check me-1"></i>Reservado</span>
+                  {% else %}
+                    <span class="badge text-bg-secondary"><i class="fa-solid fa-unlock me-1"></i>Livre</span>
+                  {% endif %}
+                </td>
+
+                <td class="text-center">
+                  {% if g.is_active %}
+                    <span class="badge text-bg-primary"><i class="fa-solid fa-eye me-1"></i>Visível</span>
+                  {% else %}
+                    <span class="badge text-bg-secondary"><i class="fa-solid fa-eye-slash me-1"></i>Oculto</span>
+                  {% endif %}
+                </td>
+
+                <td class="text-end">
+                  {% if g.reserved %}
+                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                      <i class="fa-solid fa-pen-to-square me-1"></i>Editar
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" disabled>
+                      <i class="fa-solid fa-trash me-1"></i>Excluir
+                    </button>
+                  {% else %}
+                    <a class="btn btn-sm btn-outline-secondary" href="{% url 'painel_presente_editar' g.id %}">
+                      <i class="fa-solid fa-pen-to-square me-1"></i>Editar
+                    </a>
+                    <a class="btn btn-sm btn-outline-danger" href="{% url 'painel_presente_excluir' g.id %}">
+                      <i class="fa-solid fa-trash me-1"></i>Excluir
+                    </a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
+{% else %}
+  <div class="card cp-card shadow-sm">
+    <div class="card-body text-center py-5">
+      <div class="h5 mb-2">Nenhum presente cadastrado ainda</div>
+      <div class="text-muted mb-3">Adicione o primeiro item para liberar o catálogo aos convidados.</div>
+      <a class="btn btn-primary" href="{% url 'painel_presente_novo' %}">
+        <i class="fa-solid fa-plus me-2"></i>Adicionar presente
+      </a>
+    </div>
+  </div>
+{% endif %}
 
 {% endblock %}

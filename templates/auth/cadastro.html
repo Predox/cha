@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card cp-card shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 mb-3"><i class="fa-solid fa-user-plus me-2"></i>Cadastrar</h1>
+
+        <p class="text-muted mb-4">
+          Preencha seus dados para criar a conta.
+        </p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="row g-3">
+            <div class="col-12">
+              {{ form.full_name.label_tag }}
+              {{ form.full_name }}
+              {% if form.full_name.errors %}
+                <div class="text-danger small">{{ form.full_name.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ form.phone_number.label_tag }}
+              {{ form.phone_number }}
+              {% if form.phone_number.errors %}
+                <div class="text-danger small">{{ form.phone_number.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ form.email.label_tag }}
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="text-danger small">{{ form.email.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ form.password1.label_tag }}
+              {{ form.password1 }}
+              {% if form.password1.errors %}
+                <div class="text-danger small">{{ form.password1.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              {{ form.password2.label_tag }}
+              {{ form.password2 }}
+              {% if form.password2.errors %}
+                <div class="text-danger small">{{ form.password2.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger mt-3">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <button class="btn btn-primary w-100 mt-4" type="submit">
+            <i class="fa-solid fa-user-check me-2"></i>Criar conta
+          </button>
+        </form>
+
+        <div class="text-center mt-3">
+          <span class="text-muted">Ja tem conta?</span>
+          <a class="link-secondary ms-1" href="{% url 'login' %}">Entrar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

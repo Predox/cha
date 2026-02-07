@@ -1,7 +1,5 @@
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.db import models
-from django.utils import timezone
 
 
 class Profile(models.Model):
@@ -92,53 +90,15 @@ class Gift(models.Model):
 
 
 class Reservation(models.Model):
-    # Um presente pode ter no máximo UMA reserva ativa. Ao cancelar, a reserva é removida.
+    # Um presente pode ter no maximo UMA reserva ativa. Ao cancelar, a reserva e removida.
     gift = models.OneToOneField(Gift, on_delete=models.CASCADE, related_name="reservation")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reservations")
 
-    # Mensagem deve ser anônima (não armazenamos nome na mensagem)
+    # Mensagem deve ser anonima (nao armazenamos nome na mensagem)
     anonymous_message = models.TextField(blank=True)
+    message_seen = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return f"Reserva: {self.gift_id}"
-
-
-class VerificationCode(models.Model):
-    PURPOSE_LOGIN = "login"
-    PURPOSE_RESET_PASSWORD = "reset_password"
-    PURPOSE_CHOICES = [
-        (PURPOSE_LOGIN, "Login"),
-        (PURPOSE_RESET_PASSWORD, "Redefinir senha"),
-    ]
-
-    CHANNEL_SMS = "sms"
-    CHANNEL_EMAIL = "email"
-    CHANNEL_CHOICES = [
-        (CHANNEL_SMS, "SMS"),
-        (CHANNEL_EMAIL, "E-mail"),
-    ]
-
-    phone_number = models.CharField(max_length=20, blank=True, default="")
-    email = models.EmailField(blank=True, default="")
-
-    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES)
-    channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES)
-
-    code = models.CharField(max_length=10)
-    created_at = models.DateTimeField(auto_now_add=True)
-    expires_at = models.DateTimeField()
-
-    used_at = models.DateTimeField(null=True, blank=True)
-    attempts = models.PositiveIntegerField(default=0)
-
-    def is_expired(self) -> bool:
-        return timezone.now() >= self.expires_at
-
-    def is_used(self) -> bool:
-        return self.used_at is not None
-
-    def mark_used(self):
-        self.used_at = timezone.now()
-        self.save(update_fields=["used_at"])

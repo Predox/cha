@@ -1,14 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
 
-<section class="cp-page-head mb-3">
+<section class="cp-page-head mb-4">
   <div>
     {% if mode == "new" %}
       <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-plus me-2"></i>Novo presente</h1>
+      <div class="cp-subtitle small">Crie um item atrativo com título claro, fotos e links de compra.</div>
     {% else %}
       <h1 class="cp-title-sm mb-1"><i class="fa-solid fa-pen-to-square me-2"></i>Editar presente</h1>
+      <div class="cp-subtitle small">Ajuste os detalhes do presente para manter o catálogo atualizado.</div>
     {% endif %}
-    <div class="cp-subtitle small">Imagem, título e descrição aparecem para os convidados no catálogo.</div>
   </div>
   <div class="cp-page-actions">
     <a class="btn btn-outline-secondary" href="{% url 'painel_presentes' %}">
@@ -17,76 +18,123 @@
   </div>
 </section>
 
-<div class="card cp-card shadow-sm">
-  <div class="card-body p-4">
-    <form method="post" enctype="multipart/form-data" novalidate>
-      {% csrf_token %}
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
 
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Título</label>
-        {{ form.title }}
-        {% if form.title.errors %}
-          <div class="text-danger small">{{ form.title.errors }}</div>
-        {% endif %}
-      </div>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card cp-card shadow-sm mb-4">
+        <div class="card-body p-4">
+          <div class="fw-semibold mb-3"><i class="fa-solid fa-pen me-2"></i>Detalhes do presente</div>
 
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Descrição</label>
-        {{ form.description }}
-        {% if form.description.errors %}
-          <div class="text-danger small">{{ form.description.errors }}</div>
-        {% endif %}
-      </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Título</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+              <div class="text-danger small">{{ form.title.errors }}</div>
+            {% endif %}
+          </div>
 
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Imagem principal</label>
-        {{ form.image }}
-        <div class="form-text">Formatos comuns: JPG/PNG. Em produção, recomenda-se configurar volume para /media.</div>
-        {% if form.image.errors %}
-          <div class="text-danger small">{{ form.image.errors }}</div>
-        {% endif %}
-      </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Descrição</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+              <div class="text-danger small">{{ form.description.errors }}</div>
+            {% endif %}
+          </div>
 
-      <div class="row g-3 mb-3">
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">Imagem extra 1 (opcional)</label>
-          {{ form.image_2 }}
-          {% if form.image_2.errors %}
-            <div class="text-danger small">{{ form.image_2.errors }}</div>
-          {% endif %}
+          <div class="mb-0">
+            <label class="form-label fw-semibold">Links para comprar (opcional)</label>
+            {{ form.purchase_links }}
+            <div class="cp-link-editor mt-2" data-link-editor>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Nome | URL ou apenas URL"
+                  data-link-input
+                >
+                <button class="btn btn-outline-secondary" type="button" data-link-add>
+                  <i class="fa-solid fa-plus me-1"></i>Adicionar
+                </button>
+                <button class="btn btn-outline-secondary d-none" type="button" data-link-cancel>
+                  Cancelar
+                </button>
+              </div>
+              <div class="form-text">Adicione um link por vez. Ex.: "Magalu | https://..."</div>
+              <div class="cp-link-list mt-3" data-link-list></div>
+            </div>
+            {% if form.purchase_links.errors %}
+              <div class="text-danger small">{{ form.purchase_links.errors }}</div>
+            {% endif %}
+          </div>
         </div>
-        <div class="col-md-6">
-          <label class="form-label fw-semibold">Imagem extra 2 (opcional)</label>
-          {{ form.image_3 }}
-          {% if form.image_3.errors %}
-            <div class="text-danger small">{{ form.image_3.errors }}</div>
-          {% endif %}
+      </div>
+
+      <div class="card cp-card shadow-sm">
+        <div class="card-body p-4">
+          <div class="fw-semibold mb-3"><i class="fa-solid fa-image me-2"></i>Imagens do item</div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Imagem principal</label>
+            {{ form.image }}
+            <div class="form-text">Formatos comuns: JPG/PNG. Em produção, recomenda-se configurar volume para /media.</div>
+            {% if form.image.errors %}
+              <div class="text-danger small">{{ form.image.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Imagem extra 1 (opcional)</label>
+              {{ form.image_2 }}
+              {% if form.image_2.errors %}
+                <div class="text-danger small">{{ form.image_2.errors }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Imagem extra 2 (opcional)</label>
+              {{ form.image_3 }}
+              {% if form.image_3.errors %}
+                <div class="text-danger small">{{ form.image_3.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
         </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Links para comprar (opcional)</label>
-        {{ form.purchase_links }}
-        <div class="form-text">Um por linha. Formato: "Nome | URL" ou apenas a URL.</div>
-        {% if form.purchase_links.errors %}
-          <div class="text-danger small">{{ form.purchase_links.errors }}</div>
-        {% endif %}
-      </div>
-
-      <div class="form-check mb-4">
-        {{ form.is_active }}
-        <label class="form-check-label">Ativo no catálogo</label>
       </div>
 
       {% if form.non_field_errors %}
-        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        <div class="alert alert-danger mt-4">{{ form.non_field_errors }}</div>
       {% endif %}
+    </div>
 
-      <button class="btn btn-primary" type="submit">
-        <i class="fa-solid fa-floppy-disk me-2"></i>Salvar
-      </button>
-    </form>
+    <div class="col-lg-4">
+      <div class="card cp-card shadow-sm mb-3">
+        <div class="card-body">
+          <div class="fw-semibold mb-2"><i class="fa-solid fa-toggle-on me-2"></i>Publicação</div>
+          <div class="form-check mb-3">
+            {{ form.is_active }}
+            <label class="form-check-label">Ativo no catálogo</label>
+          </div>
+          <button class="btn btn-primary w-100" type="submit">
+            <i class="fa-solid fa-floppy-disk me-2"></i>Salvar
+          </button>
+          <a class="btn btn-outline-secondary w-100 mt-2" href="{% url 'painel_presentes' %}">
+            Cancelar
+          </a>
+        </div>
+      </div>
+
+      <div class="card cp-card shadow-sm">
+        <div class="card-body">
+          <div class="fw-semibold mb-2"><i class="fa-regular fa-lightbulb me-2"></i>Dicas rápidas</div>
+          <div class="text-muted small mb-2">Use títulos diretos e descreva tamanho ou modelo.</div>
+          <div class="text-muted small mb-2">Adicione pelo menos uma foto de boa qualidade.</div>
+          <div class="text-muted small">Links claros ajudam o convidado a comprar rapidamente.</div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
+</form>
 
 {% endblock %}

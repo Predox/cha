@@ -8,38 +8,94 @@
       Estas mensagens foram deixadas pelos convidados no momento da reserva. Não há identificação.
     </div>
   </div>
-  <div class="cp-page-actions">
+  <div class="cp-page-actions d-flex gap-2">
+    <form method="post" action="{% url 'marcar_todas_mensagens_vistas' %}">
+      {% csrf_token %}
+      <button class="btn btn-outline-secondary" type="submit">
+        <i class="fa-solid fa-check-double me-2"></i>Marcar todas
+      </button>
+    </form>
     <a class="btn btn-outline-secondary" href="{% url 'painel_dashboard' %}">
       <i class="fa-solid fa-arrow-left me-2"></i>Voltar
     </a>
   </div>
 </section>
 
-{% if reservations %}
-  <div class="row g-3 cp-card-grid">
-    {% for r in reservations %}
-      <div class="col-lg-6">
-        <div class="card cp-card shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-              <div class="fw-semibold">{{ r.gift.title }}</div>
-              <div class="text-muted small">{{ r.created_at|date:"d/m/Y H:i" }}</div>
-            </div>
-            <div class="border rounded p-3 bg-light">
-              <div class="small text-muted">{{ r.anonymous_message|linebreaksbr }}</div>
-            </div>
-            <div class="small text-muted mt-2">
-              <i class="fa-solid fa-user-secret me-1"></i>Mensagem anônima
+<ul class="nav nav-pills nav-fill cp-notif-tabs mb-3" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#mensagens-nao-vistas" type="button" role="tab">
+      Não vistos ({{ unseen_count }})
+    </button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" data-bs-toggle="pill" data-bs-target="#mensagens-vistas" type="button" role="tab">
+      Vistos ({{ seen_count }})
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <div class="tab-pane fade show active" id="mensagens-nao-vistas" role="tabpanel">
+    {% if unseen_reservations %}
+      <div class="row g-3 cp-card-grid">
+        {% for r in unseen_reservations %}
+          <div class="col-lg-6">
+            <div class="card cp-card shadow-sm h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="fw-semibold">{{ r.gift.title }}</div>
+                  <div class="text-muted small">{{ r.created_at|date:"d/m/Y H:i" }}</div>
+                </div>
+                <div class="border rounded p-3 bg-light">
+                  <div class="small text-muted">{{ r.anonymous_message|linebreaksbr }}</div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <div class="small text-muted">
+                    <i class="fa-solid fa-user-secret me-1"></i>Mensagem anônima
+                  </div>
+                  <form method="post" action="{% url 'marcar_mensagem_vista' r.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-secondary" type="submit">
+                      <i class="fa-solid fa-check me-1"></i>Marcar visto
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        {% endfor %}
       </div>
-    {% endfor %}
+    {% else %}
+      <div class="alert alert-secondary">Nenhuma mensagem nova.</div>
+    {% endif %}
   </div>
-{% else %}
-  <div class="alert alert-secondary">
-    Ainda não há mensagens.
+
+  <div class="tab-pane fade" id="mensagens-vistas" role="tabpanel">
+    {% if seen_reservations %}
+      <div class="row g-3 cp-card-grid">
+        {% for r in seen_reservations %}
+          <div class="col-lg-6">
+            <div class="card cp-card shadow-sm h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div class="fw-semibold">{{ r.gift.title }}</div>
+                  <div class="text-muted small">{{ r.created_at|date:"d/m/Y H:i" }}</div>
+                </div>
+                <div class="border rounded p-3 bg-light">
+                  <div class="small text-muted">{{ r.anonymous_message|linebreaksbr }}</div>
+                </div>
+                <div class="small text-muted mt-2">
+                  <i class="fa-solid fa-user-secret me-1"></i>Mensagem anônima
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-secondary">Ainda não há mensagens vistas.</div>
+    {% endif %}
   </div>
-{% endif %}
+</div>
 
 {% endblock %}
